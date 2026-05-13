@@ -145,8 +145,12 @@ void ACFirstPersonCharacter::Look(const FInputActionValue& Value)
 			ACChest * CChest = Cast<ACChest>(Hitting);
 			if (CChest)
 			{
-				//CChest->ChestDelegate.AddDynamic(this,&ACFirstPersonCharacter::Chest);
-				UE_LOG(LogTemp, Warning, TEXT("Hitting Chest"));
+				if (!CChest->ChestDelegate.IsBound())
+				{
+					CChest->ChestDelegate.AddDynamic(this,&ACFirstPersonCharacter::Chest);
+					UE_LOG(LogTemp, Warning, TEXT("Hitting Chest789"));
+\
+				}
 			}
 		}
 	}
