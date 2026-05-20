@@ -80,6 +80,49 @@ void ACFirstPersonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+void ACFirstPersonCharacter::Server_CallAction_Implementation(FVector Direction)
+{
+	FHitResult Hit;
+	FCollisionQueryParams CollisionParams;
+	AActor *Hitting;
+	
+	FVector StartLine=FirstPersonCameraComponent->GetComponentLocation();
+	FVector EndLine=Direction*LineLen+StartLine;
+	
+	if (!GetWorld()) return;
+	
+	DrawDebugLine(GetWorld(), StartLine, EndLine, FColor::Green, false, 1, 0, 1);
+	
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLine, EndLine, ECollisionChannel::ECC_Visibility,CollisionParams))
+	{
+		if (Hit.bBlockingHit)
+		{
+			Hitting=Hit.GetActor();
+			UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
+			ICActionInterface * ActionInterface = Cast<ICActionInterface>(Hitting);
+			if(ActionInterface)
+			{
+				ActionInterface->IAction();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Hitting does NOT implement intergace"));
+			}
+			ACChest * CChest = Cast<ACChest>(Hitting);
+			if (CChest)
+			{
+				if (!CChest->ChestDelegate.IsBound())
+				{
+					CChest->ChestDelegate.AddDynamic(this,&ACFirstPersonCharacter::Chest);
+					UE_LOG(LogTemp, Warning, TEXT("Hitting Chest"));
+				\
+				}
+			}
+		}
+	}
+}
+
+
 
 void ACFirstPersonCharacter::Move(const FInputActionValue& Value)
 {
@@ -107,53 +150,7 @@ void ACFirstPersonCharacter::Look(const FInputActionValue& Value)
 	}
 }void ACFirstPersonCharacter::Action(const FInputActionValue& Value)
 {
-	/*// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}*/
-	FHitResult Hit;
-	FCollisionQueryParams CollisionParams;
-	AActor *Hitting;
-	
-	FVector StartLine=FirstPersonCameraComponent->GetComponentLocation();
-	FVector EndLine=FirstPersonCameraComponent->GetForwardVector()*LineLen+StartLine;
-	
-	if (!GetWorld()) return;
-	
-	DrawDebugLine(GetWorld(), StartLine, EndLine, FColor::Green, false, 1, 0, 1);
-	
-	if (GetWorld()->LineTraceSingleByChannel(Hit, StartLine, EndLine, ECollisionChannel::ECC_Visibility,CollisionParams))
-	{
-		if (Hit.bBlockingHit)
-		{
-			Hitting=Hit.GetActor();
-			UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
-			 ICActionInterface * ActionInterface = Cast<ICActionInterface>(Hitting);
-			if(ActionInterface)
-			{
-				ActionInterface->IAction();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Hitting does NOT implement intergace"));
-			}
-			ACChest * CChest = Cast<ACChest>(Hitting);
-			if (CChest)
-			{
-				if (!CChest->ChestDelegate.IsBound())
-				{
-					CChest->ChestDelegate.AddDynamic(this,&ACFirstPersonCharacter::Chest);
-					UE_LOG(LogTemp, Warning, TEXT("Hitting Chest789"));
-\
-				}
-			}
-		}
-	}
+	Server_CallAction(FirstPersonCameraComponent->GetForwardVector());
 }
 
 void ACFirstPersonCharacter::Chest()

@@ -128,7 +128,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -137,9 +137,13 @@ public:
 	
 	FChestDelegate ChestDelegate;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing="On_RepChestState")
 	EChestState ChestState;
 	
 private:
 	void GenerateShapes();
+	UFUNCTION()
+	void On_RepChestState();
+	
+	
 };

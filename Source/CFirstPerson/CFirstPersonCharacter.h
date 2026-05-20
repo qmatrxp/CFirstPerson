@@ -72,6 +72,9 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	UFUNCTION(Server, Reliable)
+	void Server_CallAction(FVector Direction);
+	void Server_CallAction_Implementation(FVector Direction);
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }

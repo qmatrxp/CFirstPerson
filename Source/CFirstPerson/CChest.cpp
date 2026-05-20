@@ -3,6 +3,8 @@
 
 #include "CChest.h"
 
+#include "Net/UnrealNetwork.h"
+
 
 // Sets default values
 ACChest::ACChest()
@@ -20,7 +22,7 @@ ACChest::ACChest()
 		CubeMesh->SetStaticMesh(CubeMeshAsset.Object);
 		CubeMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	}
-	
+	bReplicates=true;
 	
 
 
@@ -43,6 +45,10 @@ void ACChest::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	GenerateShapes();
 }
+
+
+
+
 
 void ACChest::IAction()
 {
@@ -190,5 +196,17 @@ void ACChest::GenerateShapes()
 	}
 	
 	
+}
+
+void ACChest::On_RepChestState()
+{
+	ChestMaterial();
+	UE_LOG(LogTemp, Warning, TEXT("On_RepChestState"));	
+}
+
+void ACChest::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ACChest,ChestState);
 }
 
